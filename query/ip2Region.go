@@ -68,7 +68,7 @@ func (ipr *Ip2Region) Close() error {
 	return ipr.dbFileHandler.Close()
 }
 
-func (ipr *Ip2Region) loadToMemory() error {
+func (ipr *Ip2Region) LoadToMemory() error {
 	var err error
 	if ipr.totalBlocks == 0 {
 		ipr.dbBinStr, err = ioutil.ReadFile(ipr.dbFile)
@@ -84,7 +84,7 @@ func (ipr *Ip2Region) loadToMemory() error {
 	return err
 }
 
-// Notion: Need to call a before loadToMemory
+// Notion: Need to call a before LoadToMemory
 func (ipr *Ip2Region) MemorySearch(ipStr string) (ipInfo IpInfo, err error) {
 	ipInfo = IpInfo{}
 

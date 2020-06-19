@@ -62,9 +62,9 @@ func TestIp2Region_MemorySearch(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = ipr.loadToMemory()
+	err = ipr.LoadToMemory()
 	if err != nil {
-		t.Fatalf("%v",err)
+		t.Fatalf("%v", err)
 	}
 	ipStr := "255.255.255.255"
 
