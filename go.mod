@@ -1,4 +1,4 @@
-module github.com/hokitlee/go-ip2region/maker
+module github.com/hokitlee/go-ip2region
 
 go 1.13
 
