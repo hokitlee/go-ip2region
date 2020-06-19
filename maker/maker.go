@@ -238,6 +238,13 @@ func (mk *Maker) UseQQWryMake(qFilePath, regionFilePath string) error {
 	}
 	mk.metadata = mdData
 
+	m := Metadata{
+		StartIP: "255.0.0.0",
+		EndIP:   "255.255.255.255",
+	}
+	m.Format()
+
+	mk.metadata = append(mk.metadata, m)
 	return mk.make()
 }
 

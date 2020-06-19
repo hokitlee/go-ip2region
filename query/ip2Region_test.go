@@ -70,7 +70,7 @@ func TestIp2Region_MemorySearch(t *testing.T) {
 
 	ipNum, _ := Ip2long(ipStr)
 	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 500; i++ {
 
 		ip := IpLong2String(rand.Int63n(ipNum))
 
@@ -79,6 +79,5 @@ func TestIp2Region_MemorySearch(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s", err)
 		}
-
 	}
 }
