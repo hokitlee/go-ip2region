@@ -1,6 +1,7 @@
 package maker
 
 import (
+	"container/list"
 	"io"
 	"log"
 	"os"
@@ -223,16 +224,11 @@ func NewMaker(dbFilePath string, md []Metadata, rm, pm, im map[string]int) *Make
 	return mk
 }
 
-func (mk *Maker) UseQQWryMake(qFilePath, regionFilePath string) error {
+func (mk *Maker) UseQQWryMake(qFilePath string, extraIp ...Metadata) error {
 	log.Println("start use qqwry db make ip db")
 	qw := NewQQwry(qFilePath)
 
-	provinceMap, err := ProvinceMap(regionFilePath)
-	if err != nil {
-		return err
-	}
-
-	mdData, err := qw.GetQQWryIpRecord(provinceMap)
+	mdData, err := qw.GetQQWryIpRecord(mk.provinceCodeMap)
 	if err != nil {
 		return err
 	}
@@ -245,10 +241,16 @@ func (mk *Maker) UseQQWryMake(qFilePath, regionFilePath string) error {
 	m.Format()
 
 	mk.metadata = append(mk.metadata, m)
-	return mk.make()
+	return mk.make(extraIp...)
 }
 
-func (mk *Maker) make() error {
+func (mk *Maker) make(extra ...Metadata) error {
+
+	if len(extra) != 0 {
+		log.Printf("has extra ip recod \n")
+		mk.metadata = MergeMetadata(mk.metadata, extra)
+	}
+
 	var err error
 	mk.dbFile, err = os.OpenFile(mk.dbFilePath, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
@@ -425,4 +427,90 @@ func (mk *Maker) addDataBlock(md Metadata) (*IndexBlock, error) {
 	mk.regionRecordMap[md.RegionString()] = ib
 
 	return &ib, err
+}
+
+// weight of m more then n
+func MergeMetadata(n, m []Metadata) []Metadata {
+
+	log.Printf("MergeMetadata, old dataSize %d, extra dataSize %d \n", len(n), len(m))
+
+	mi := 0
+
+	ls := list.New()
+
+	type Data struct {
+		Metadata
+		SI int64
+		EI int64
+	}
+
+	cover2Data := func(m Metadata) Data {
+		si, _ := Ip2long(m.StartIP)
+		ei, _ := Ip2long(m.EndIP)
+		return Data{
+			Metadata: m,
+			SI:       si,
+			EI:       ei,
+		}
+	}
+
+	for _, n := range n {
+		ls.PushBack(cover2Data(n))
+	}
+
+	curr := ls.Front()
+
+	for {
+		if mi >= len(m) || curr == nil {
+			break
+		}
+		v := curr.Value.(Data)
+		cm := cover2Data(m[mi])
+		if cm.SI > v.EI {
+			curr = curr.Next()
+			continue
+		}
+		var a, b = *curr, curr
+
+		for ; b.Next() != nil && b.Value.(Data).EI < cm.EI; b = b.Next() {
+		}
+
+		// remove mid node
+
+		for end := b.Next(); curr != end; {
+			tt := curr
+			curr = curr.Next()
+			ls.Remove(tt)
+		}
+
+		av, bv := a.Value.(Data), b.Value.(Data)
+
+		if av.SI != cm.SI {
+			d := av
+			d.EI = cm.SI - 1
+			d.EndIP = IpLong2String(d.EI)
+			ls.InsertBefore(d, curr)
+		}
+
+		ls.InsertBefore(cm, curr)
+
+		if cm.EI != bv.EI {
+			d := bv
+			d.SI = cm.EI + 1
+			d.StartIP = IpLong2String(d.SI)
+			ls.InsertBefore(d, curr)
+		}
+
+		mi++
+	}
+
+	res := make([]Metadata, 0)
+
+	for f := ls.Front(); f != nil; f = f.Next() {
+		res = append(res, f.Value.(Data).Metadata)
+	}
+
+	log.Printf("MergeMetadata finish, dataSize %d \n", len(res))
+
+	return res
 }

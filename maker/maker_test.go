@@ -2,6 +2,7 @@ package maker
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -9,8 +10,6 @@ import (
 	"strings"
 	"testing"
 )
-
-
 
 func TestMaker_make(t *testing.T) {
 	rm := make(map[string]int)
@@ -49,15 +48,15 @@ func TestMaker_make(t *testing.T) {
 		rm[ss[2]] = rId
 		pm[ss[2]] = pId
 	}
-	isp := []string{"其他", "移动", "铁通", "联通", "电信","内网IP"}
-	ispId := []int{0, 1, 1, 2, 3,4}
+	isp := []string{"其他", "移动", "铁通", "联通", "电信", "内网IP"}
+	ispId := []int{0, 1, 1, 2, 3, 4}
 	for i := range isp {
 		im[isp[i]] = ispId[i]
 	}
 
-	mf,err := os.Open("../data/ip.merge.txt")
-	if err != nil{
-		t.Fatalf("%s",err)
+	mf, err := os.Open("../data/ip.merge.txt")
+	if err != nil {
+		t.Fatalf("%s", err)
 	}
 
 	mfrd := bufio.NewReader(mf)
@@ -73,7 +72,7 @@ func TestMaker_make(t *testing.T) {
 			t.Fatalf("%s", err)
 		}
 
-		ss := strings.Split(string(bs),"|")
+		ss := strings.Split(string(bs), "|")
 		mds = append(mds, Metadata{
 			StartIP:  ss[0],
 			EndIP:    ss[1],
@@ -84,8 +83,7 @@ func TestMaker_make(t *testing.T) {
 		})
 	}
 
-
-	maker := NewMaker("./dbFile.db", mds, rm, pm, im)
+	maker := NewMaker("./db.db", mds, rm, pm, im)
 	err = maker.make()
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -94,21 +92,72 @@ func TestMaker_make(t *testing.T) {
 
 func TestMaker_UseQQWryMake(t *testing.T) {
 
-	rm,err := RegionMap("../data/area_code.csv")
+	rm, err := RegionMap("../data/area_code.csv")
 	if err != nil {
-		t.Fatalf("%v",err)
+		t.Fatalf("%v", err)
 	}
-	pm,err := ProvinceMap("../data/area_code.csv")
+	pm, err := ProvinceMap("../data/area_code.csv")
 	if err != nil {
-		t.Fatalf("%v",err)
+		t.Fatalf("%v", err)
 	}
-	im,err := IspMap("../data/isp_code.csv")
+	im, err := IspMap("../data/isp_code.csv")
 	if err != nil {
-		t.Fatalf("%v",err)
+		t.Fatalf("%v", err)
 	}
-	mk := NewMaker("./qdb.db", nil, rm, pm, im)
-	err = mk.UseQQWryMake("../data/qqwry.dat","../data/area_code.csv")
+	mk := NewMaker("../data/db.db", nil, rm, pm, im)
+
+	mergeMetaData := make([]Metadata, 0)
+
+	err = mk.UseQQWryMake("../data/qqwry.dat", mergeMetaData...)
 	if err != nil {
-		t.Fatalf("%v",err)
+		t.Fatalf("%v", err)
 	}
+}
+
+func TestMergeMetadata(t *testing.T) {
+	mf, err := os.Open("../data/ip.txt")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	mfrd := bufio.NewReader(mf)
+	var mds []Metadata
+
+	for {
+		bs, _, err := mfrd.ReadLine()
+		if err == io.EOF {
+			log.Println("read Province code file finish")
+			break
+		}
+		if err != nil {
+			t.Fatalf("%s", err)
+		}
+
+		ss := strings.Split(string(bs), "|")
+		mds = append(mds, Metadata{
+			StartIP:  ss[0],
+			EndIP:    ss[1],
+			Country:  ss[2],
+			Province: ss[4],
+			City:     ss[5],
+			Isp:      ss[6],
+		})
+	}
+
+	mergeMetaData := make([]Metadata, 0)
+
+	mergeMetaData = append(mergeMetaData, Metadata{
+		StartIP:  "0.0.0.0",
+		EndIP:    "1.0.0.255",
+		Country:  "test",
+		Province: "test",
+		City:     "test",
+		Isp:      "test",
+	})
+
+	ms := MergeMetadata(mds, mergeMetaData)
+
+	for _, n := range ms {
+		fmt.Printf("%-10v \n", n)
+	}
+
 }

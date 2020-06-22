@@ -231,7 +231,7 @@ func (ipr *Ip2Region) BtreeSearch(ipStr string) (ipInfo IpInfo, err error) {
 	h := ipr.headerLen
 
 	for l <= h {
-		m := int64(l+h) >> 1
+		m := l + h>>1
 		if m < ipr.headerLen {
 			if ip == ipr.headerSip[m] {
 				if m > 0 {

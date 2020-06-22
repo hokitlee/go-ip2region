@@ -42,7 +42,6 @@ func IpInt642String(n int64) string {
 	return ipStr
 }
 
-
 func Ip2long(IpStr string) (int64, error) {
 	bits := strings.Split(IpStr, ".")
 	if len(bits) != 4 {
@@ -57,8 +56,6 @@ func Ip2long(IpStr string) (int64, error) {
 
 	return sum, nil
 }
-
-
 
 func IpLong2String(n int64) string {
 	var m int64 = 8
