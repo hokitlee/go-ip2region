@@ -39,10 +39,27 @@ func BenchmarkMemorySearch(B *testing.B) {
 		B.Error(err)
 	}
 	B.ResetTimer()
+	ipr.LoadToMemory()
+
 	for i := 0; i < B.N; i++ {
 		region.MemorySearch("127.0.0.1")
 	}
-	//fmt.Println("-------------" + time.Since(t).String())
+}
+
+func BenchmarkMemorySearchParallel(B *testing.B) {
+	region, err := New(IpDbAddress)
+	_ = region
+	if err != nil {
+		B.Error(err)
+	}
+	B.ResetTimer()
+	B.ReportAllocs()
+	ipr.LoadToMemory()
+	B.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			region.MemorySearch("127.0.0.1")
+		}
+	})
 }
 
 func BenchmarkBinarySearch(B *testing.B) {

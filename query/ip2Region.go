@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -49,6 +50,8 @@ type Ip2Region struct {
 
 	dbBinStr []byte
 	dbFile   string
+
+	mu sync.Mutex
 }
 
 func New(path string) (*Ip2Region, error) {
@@ -86,6 +89,13 @@ func (ipr *Ip2Region) LoadToMemory() error {
 
 // Notion: Need to call a before LoadToMemory
 func (ipr *Ip2Region) MemorySearch(ipStr string) (ipInfo IpInfo, err error) {
+
+	//ipr.mu.Lock()
+	//if ipr.totalBlocks == 0 {
+	//	ipr.LoadToMemory()
+	//}
+	//ipr.mu.Unlock()
+
 	ipInfo = IpInfo{}
 
 	if ipr.totalBlocks == 0 {
