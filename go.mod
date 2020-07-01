@@ -1,6 +1,6 @@
-module github.com/hokitlee/go-ip2region
+module github.com/PPIO/go-ip2region
 
-go 1.13
+go 1.14
 
 require (
 	github.com/yanyiwu/gojieba v1.1.2
