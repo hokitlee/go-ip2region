@@ -1,4 +1,4 @@
-module github.com/PPIO/go-ip2region
+module github.com/hokitlee/go-ip2region
 
 go 1.14
 
