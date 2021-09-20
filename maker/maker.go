@@ -224,26 +224,6 @@ func NewMaker(dbFilePath string, md []Metadata, rm, pm, im map[string]int) *Make
 	return mk
 }
 
-func (mk *Maker) UseQQWryMake(qFilePath string, extraIp ...Metadata) error {
-	log.Println("start use qqwry db make ip db")
-	qw := NewQQwry(qFilePath)
-
-	mdData, err := qw.GetQQWryIpRecord(mk.provinceCodeMap)
-	if err != nil {
-		return err
-	}
-	mk.metadata = mdData
-
-	m := Metadata{
-		StartIP: "255.0.0.0",
-		EndIP:   "255.255.255.255",
-	}
-	m.Format()
-
-	mk.metadata = append(mk.metadata, m)
-	return mk.make(extraIp...)
-}
-
 func (mk *Maker) make(extra ...Metadata) error {
 
 	if len(extra) != 0 {

@@ -90,30 +90,6 @@ func TestMaker_make(t *testing.T) {
 	}
 }
 
-func TestMaker_UseQQWryMake(t *testing.T) {
-
-	rm, err := RegionMap("../data/area_code.csv")
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	pm, err := ProvinceMap("../data/area_code.csv")
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	im, err := IspMap("../data/isp_code.csv")
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	mk := NewMaker("../data/db.db", nil, rm, pm, im)
-
-	mergeMetaData := make([]Metadata, 0)
-
-	err = mk.UseQQWryMake("../data/qqwry.dat", mergeMetaData...)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-}
-
 func TestMergeMetadata(t *testing.T) {
 	mf, err := os.Open("../data/ip.txt")
 	if err != nil {
