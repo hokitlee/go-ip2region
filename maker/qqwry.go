@@ -28,7 +28,6 @@ func (ip *IpInfo) String() string {
 	return fmt.Sprintf("ip: %s, country: %s, city: %s", ip.Ip, ip.Country, ip.City)
 }
 
-// @author yinheli
 type QQwry struct {
 	Ip       string
 	Country  string
